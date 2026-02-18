@@ -72,11 +72,22 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 
 ### Phase 3: Capture the Design
 
-Write a brainstorm document to `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md`.
+Write the brainstorm to one of two locations based on context:
+
+**If this will become a spec (most cases):**
+Create the spec directory and write as research.md:
+```bash
+# Determine next spec ID
+next_id=$(printf "%03d" $(($(ls -d specs/[0-9]* 2>/dev/null | wc -l) + 1)))
+mkdir -p "specs/${next_id}-<topic>"
+```
+Write to `specs/<id>/research.md`
+
+**If this is pure exploration (no implementation planned):**
+Write to `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md`
+Ensure `docs/brainstorms/` directory exists before writing.
 
 **Document structure:** See the `brainstorming` skill for the template format. Key sections: What We're Building, Why This Approach, Key Decisions, Open Questions.
-
-Ensure `docs/brainstorms/` directory exists before writing.
 
 **IMPORTANT:** Before proceeding to Phase 4, check if there are any Open Questions listed in the brainstorm document. If there are open questions, YOU MUST ask the user about each one using AskUserQuestion before offering to proceed to planning. Move resolved questions to a "Resolved Questions" section.
 
@@ -110,13 +121,13 @@ When complete, display:
 ```
 Brainstorm complete!
 
-Document: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md
+Document: specs/<id>/research.md (or docs/brainstorms/<name>.md if exploratory)
 
 Key decisions:
 - [Decision 1]
 - [Decision 2]
 
-Next: Run `/workflows:plan` when ready to implement.
+Next: Run `/workflows:plan` when ready to create the full spec.
 ```
 
 ## Important Guidelines

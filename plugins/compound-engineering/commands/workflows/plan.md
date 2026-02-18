@@ -24,9 +24,12 @@ Do not proceed until you have a clear feature description from the user.
 
 **Check for brainstorm output first:**
 
-Before asking questions, look for recent brainstorm documents in `docs/brainstorms/` that match this feature:
+Before asking questions, look for recent brainstorm documents in `specs/` that match this feature:
 
 ```bash
+# Check for brainstorm/research files in specs directories
+find specs -name "research.md" -o -name "brainstorm.md" 2>/dev/null | head -10
+# Also check legacy location
 ls -la docs/brainstorms/*.md 2>/dev/null | head -10
 ```
 
@@ -479,41 +482,55 @@ end
 
 **REQUIRED: Write the plan file to disk before presenting any options.**
 
+**Canonical structure:** All planning artifacts go in `specs/<id>/` where `<id>` is `<number>-<short-slug>`.
+
 ```bash
-mkdir -p docs/plans/
+# Determine next spec ID
+next_id=$(printf "%03d" $(($(ls -d specs/[0-9]* 2>/dev/null | wc -l) + 1)))
+spec_dir="specs/${next_id}-<short-slug>"
+mkdir -p "$spec_dir"
 ```
 
-Use the Write tool to save the complete plan to `docs/plans/YYYY-MM-DD-<type>-<descriptive-name>-plan.md`. This step is mandatory and cannot be skipped — even when running as part of LFG/SLFG or other automated pipelines.
+Use the Write tool to save files to the spec directory:
+- `specs/<id>/spec.md` - Requirements + acceptance scenarios (source of truth)
+- `specs/<id>/plan.md` - Implementation approach + architecture decisions
+- `specs/<id>/tasks.md` - Ordered, checkable execution list
+- `specs/<id>/research.md` - Optional, only when unknowns need investigation
 
-Confirm: "Plan written to docs/plans/[filename]"
+This step is mandatory and cannot be skipped — even when running as part of LFG/SLFG or other automated pipelines.
+
+Confirm: "Spec created at specs/[id]/"
 
 **Pipeline mode:** If invoked from an automated workflow (LFG, SLFG, or any `disable-model-invocation` context), skip all AskUserQuestion calls. Make decisions automatically and proceed to writing the plan without interactive prompts.
 
 ## Output Format
 
-**Filename:** Use the date and kebab-case filename from Step 2 Title & Categorization.
+**Directory structure:** Use numbered ID with kebab-case slug.
 
 ```
-docs/plans/YYYY-MM-DD-<type>-<descriptive-name>-plan.md
+specs/<number>-<short-slug>/
+├── spec.md     # Requirements + acceptance scenarios
+├── plan.md     # Implementation approach + architecture decisions
+├── tasks.md    # Ordered, checkable execution list
+└── research.md # Optional - research findings
 ```
 
 Examples:
-- ✅ `docs/plans/2026-01-15-feat-user-authentication-flow-plan.md`
-- ✅ `docs/plans/2026-02-03-fix-checkout-race-condition-plan.md`
-- ✅ `docs/plans/2026-03-10-refactor-api-client-extraction-plan.md`
-- ❌ `docs/plans/2026-01-15-feat-thing-plan.md` (not descriptive - what "thing"?)
-- ❌ `docs/plans/2026-01-15-feat-new-feature-plan.md` (too vague - what feature?)
-- ❌ `docs/plans/2026-01-15-feat: user auth-plan.md` (invalid characters - colon and space)
-- ❌ `docs/plans/feat-user-auth-plan.md` (missing date prefix)
+- ✅ `specs/001-user-authentication/plan.md`
+- ✅ `specs/002-checkout-race-fix/plan.md`
+- ✅ `specs/003-api-client-refactor/plan.md`
+- ❌ `specs/user-auth/plan.md` (missing number prefix)
+- ❌ `specs/001/plan.md` (missing descriptive slug)
+- ❌ `specs/001-thing/plan.md` (not descriptive - what "thing"?)
 
 ## Post-Generation Options
 
 After writing the plan file, use the **AskUserQuestion tool** to present these options:
 
-**Question:** "Plan ready at `docs/plans/YYYY-MM-DD-<type>-<name>-plan.md`. What would you like to do next?"
+**Question:** "Spec ready at `specs/<id>/`. What would you like to do next?"
 
 **Options:**
-1. **Open plan in editor** - Open the plan file for review
+1. **Open spec in editor** - Open the spec directory for review
 2. **Run `/deepen-plan`** - Enhance each section with parallel research agents (best practices, performance, UI)
 3. **Run `/technical_review`** - Technical feedback from code-focused reviewers (DHH, Kieran, Simplicity)
 4. **Review and refine** - Improve the document through structured self-review
@@ -522,12 +539,12 @@ After writing the plan file, use the **AskUserQuestion tool** to present these o
 7. **Create Issue** - Create issue in project tracker (GitHub/Linear)
 
 Based on selection:
-- **Open plan in editor** → Run `open docs/plans/<plan_filename>.md` to open the file in the user's default editor
-- **`/deepen-plan`** → Call the /deepen-plan command with the plan file path to enhance with research
+- **Open spec in editor** → Run `open specs/<id>/` to open the spec directory in the user's default editor
+- **`/deepen-plan`** → Call the /deepen-plan command with the plan file path (`specs/<id>/plan.md`) to enhance with research
 - **`/technical_review`** → Call the /technical_review command with the plan file path
 - **Review and refine** → Load `document-review` skill.
-- **`/workflows:work`** → Call the /workflows:work command with the plan file path
-- **`/workflows:work` on remote** → Run `/workflows:work docs/plans/<plan_filename>.md &` to start work in background for Claude Code web
+- **`/workflows:work`** → Call the /workflows:work command with the spec directory (`specs/<id>/`)
+- **`/workflows:work` on remote** → Run `/workflows:work specs/<id>/ &` to start work in background for Claude Code web
 - **Create Issue** → See "Issue Creation" section below
 - **Other** (automatically provided) → Accept free text for rework or specific changes
 
